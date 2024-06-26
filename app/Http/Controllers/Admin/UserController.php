@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\User;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 
 class UserController extends Controller
 {
     public function index()
     {
-        $users = User::latest()->paginate();
+        $users = User::query()
+            ->when(request('query'), function ($query, $searchQuery) {
+                $query->where('name', 'like', "%{$searchQuery}%");
+            })
+            ->latest()
+            ->paginate();
 
         return $users;
     }
@@ -34,7 +38,7 @@ class UserController extends Controller
     {
         request()->validate([
             'name' => 'required',
-            'email' => 'required|unique:users,email,' . $user->id,
+            'email' => 'required|unique:users,email,'.$user->id,
             'password' => 'sometimes|min:8',
         ]);
 
@@ -61,15 +65,6 @@ class UserController extends Controller
         ]);
 
         return response()->json(['success' => true]);
-    }
-
-    public function search()
-    {
-        $searchQuery = request('query');
-
-        $users = User::where('name', 'like', "%{$searchQuery}%")->paginate();
-
-        return response()->json($users);
     }
 
     public function bulkDelete()

@@ -15,12 +15,16 @@ const formValues = ref();
 const form = ref(null);
 
 const getUsers = (page = 1) => {
-    axios.get(`/api/users?page=${page}`)
-        .then((response) => {
-            users.value = response.data;
-            selectedUsers.value = [];
-            selectAll.value = false;
-        })
+    axios.get(`/api/users?page=${page}`, {
+        params: {
+            query: searchQuery.value
+        }
+    })
+    .then((response) => {
+        users.value = response.data;
+        selectedUsers.value = [];
+        selectAll.value = false;
+    })
 }
 
 const createUserSchema = yup.object({
@@ -90,25 +94,7 @@ const handleSubmit = (values, actions) => {
     }
 }
 
-const userDeleted = (userId) => {
-    users.value = users.value.filter(user => user.id !== userId);
-};
-
 const searchQuery = ref(null);
-
-const search = () => {
-    axios.get('/api/users/search', {
-        params: {
-            query: searchQuery.value
-        }
-    })
-        .then(response => {
-            users.value = response.data;
-        })
-        .catch(error => {
-            console.log(error);
-        })
-};
 
 const selectedUsers = ref([]);
 const toggleSelection = (user) => {
@@ -119,6 +105,21 @@ const toggleSelection = (user) => {
         selectedUsers.value.splice(index, 1);
     }
     console.log(selectedUsers.value);
+};
+
+const userIdBeingDeleted = ref(null);
+const confirmUserDeletion = (id) => {
+    userIdBeingDeleted.value = id;
+    $('#deleteUserModal').modal('show');
+};
+
+const deleteUser = () => {
+    axios.delete(`/api/users/${userIdBeingDeleted.value}`)
+    .then(() => {
+        $('#deleteUserModal').modal('hide');
+        toastr.success('User deleted successfully!');
+        users.value.data = users.value.data.filter(user => user.id !== userIdBeingDeleted.value);
+    });
 };
 
 const bulkDelete = () => {
@@ -146,7 +147,7 @@ const selectAllUsers = () => {
 }
 
 watch(searchQuery, debounce(() => {
-    search();
+    getUsers();
 }, 300));
 
 onMounted(() => {
@@ -207,8 +208,13 @@ onMounted(() => {
                             </tr>
                         </thead>
                         <tbody v-if="users.data.length > 0">
-                            <UserListItem v-for="(user, index) in users.data" :key="user.id" :user=user :index=index
-                                @edit-user="editUser" @user-deleted="userDeleted" @toggle-selection="toggleSelection" :select-all="selectAll" />
+                            <UserListItem v-for="(user, index) in users.data"
+                                :key="user.id"
+                                :user=user :index=index
+                                @edit-user="editUser"
+                                @confirm-user-deletion="confirmUserDeletion"
+                                @toggle-selection="toggleSelection"
+                                :select-all="selectAll" />
                         </tbody>
                         <tbody v-else>
                             <tr>
@@ -266,6 +272,29 @@ onMounted(() => {
                         <button type="submit" class="btn btn-primary">Save</button>
                     </div>
                 </Form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteUserModal" data-backdrop="static" tabindex="-1" role="dialog"
+        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">
+                        <span>Delete User</span>
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h5>Are you sure you want to delete this user ?</h5>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button @click.prevent="deleteUser" type="button" class="btn btn-primary">Delete User</button>
+                </div>
             </div>
         </div>
     </div>
