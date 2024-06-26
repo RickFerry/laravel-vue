@@ -1,8 +1,19 @@
 <script setup>
-defineProps({
-    user: Object,
-    settings: Object,
-});
+import { useAuthUserStore } from '../stores/AuthUserStore';
+import { useRouter } from 'vue-router';
+import { useSettingStore } from '../stores/SettingStore';
+
+const router = useRouter();
+const authUserStore = useAuthUserStore();
+const settingStore = useSettingStore();
+
+const logout = () => {
+    axios.post('/logout')
+    .then((response) => {
+        authUserStore.user.name = '';
+        router.push('/login');
+    });
+};
 </script>
 
 <template>
@@ -11,17 +22,17 @@ defineProps({
         <a href="index3.html" class="brand-link">
             <img src="https://adminlte.io/themes/v3/dist/img/AdminLTELogo.png" alt="AdminLTE Logo"
                 class="brand-image img-circle elevation-3" style="opacity: .8">
-            <span class="brand-text font-weight-light">{{ settings?.app_name }}</span>
+            <span class="brand-text font-weight-light">{{ settingStore.setting.app_name }}</span>
         </a>
 
         <div class="sidebar">
 
             <div class="user-panel mt-3 pb-3 mb-3 d-flex">
                 <div class="image">
-                    <img :src="user?.avatar" class="img-circle elevation-2" alt="User Image">
+                    <img :src="authUserStore.user.avatar" class="img-circle elevation-2" alt="User Image">
                 </div>
                 <div class="info">
-                    <a href="#" class="d-block">{{ user?.name }}</a>
+                    <a href="#" class="d-block">{{ authUserStore.user.name }}</a>
                 </div>
             </div>
 
