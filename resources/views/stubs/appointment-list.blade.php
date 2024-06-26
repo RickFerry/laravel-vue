@@ -1,37 +1,4 @@
-<script setup>
-import { onMounted, ref } from 'vue';
-
-const appointments = ref([]);
-const getAppointments = () => {
-    axios('/api/appointments')
-    .then((response) => {
-        appointments.value = response.data;
-    })
-};
-
-onMounted(() => {
-    getAppointments();
-});
-</script>
-<template>
-    <div class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1 class="m-0">Appointments</h1>
-                </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item active">Appointments</li>
-                    </ol>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <div class="content">
+<div class="content">
         <div class="container-fluid">
             <div class="row">
                 <div class="col-lg-12">
@@ -73,13 +40,13 @@ onMounted(() => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="(appointment, index) in appointments.data" :key="appointment.id">
-                                        <td>{{  index + 1 }}</td>
-                                        <td>{{ appointment.client.first_name }} {{ appointment.client.last_name }}</td>
-                                        <td>{{ appointment.start_time }}</td>
-                                        <td>{{ appointment.end_time }}</td>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>Mr. Martin Glover MD</td>
+                                        <td>2023-01-27</td>
+                                        <td>05:40 PM</td>
                                         <td>
-                                            <span class="badge" :class="`badge-${appointment.status.color}`">{{ appointment.status.name }}</span>
+                                            <span class="badge badge-success">closed</span>
                                         </td>
                                         <td>
                                             <a href="">
@@ -99,4 +66,3 @@ onMounted(() => {
             </div>
         </div>
     </div>
-</template>
